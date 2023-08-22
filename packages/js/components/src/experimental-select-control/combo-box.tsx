@@ -1,12 +1,20 @@
 /**
  * External dependencies
  */
-import { createElement, MouseEvent, useRef, forwardRef } from 'react';
+import {
+	createElement,
+	MouseEvent,
+	useRef,
+	forwardRef,
+	useState,
+	useEffect,
+} from 'react';
 import classNames from 'classnames';
 import { Icon, chevronDown } from '@wordpress/icons';
 
 type ComboBoxProps = {
 	children?: JSX.Element | JSX.Element[] | null;
+	cleanInput?: boolean;
 	comboBoxProps: JSX.IntrinsicElements[ 'div' ];
 	inputProps: JSX.IntrinsicElements[ 'input' ];
 	getToggleButtonProps?: () => Omit<
@@ -32,6 +40,7 @@ const ToggleButton = forwardRef< HTMLButtonElement >( ( props, ref ) => {
 
 export const ComboBox = ( {
 	children,
+	cleanInput = false,
 	comboBoxProps,
 	getToggleButtonProps = () => ( {} ),
 	inputProps,
@@ -39,6 +48,13 @@ export const ComboBox = ( {
 	showToggleButton,
 }: ComboBoxProps ) => {
 	const inputRef = useRef< HTMLInputElement | null >( null );
+	const [ inputValue, setInputValue ] = useState( '' );
+
+	useEffect( () => {
+		if ( cleanInput ) {
+			setInputValue( '' );
+		}
+	}, [ cleanInput ] );
 
 	const maybeFocusInput = ( event: MouseEvent< HTMLDivElement > ) => {
 		if ( ! inputRef || ! inputRef.current ) {
@@ -82,6 +98,13 @@ export const ComboBox = ( {
 										node: HTMLInputElement | null
 									) => void
 								 )( node );
+							}
+						} }
+						value={ inputValue }
+						onChange={ ( event ) => {
+							setInputValue( event.target.value );
+							if ( inputProps.onChange ) {
+								inputProps.onChange( event );
 							}
 						} }
 					/>

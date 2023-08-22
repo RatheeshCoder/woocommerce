@@ -3,7 +3,7 @@
  */
 import { chevronDown } from '@wordpress/icons';
 import classNames from 'classnames';
-import { createElement, useState } from '@wordpress/element';
+import { createElement, useMemo, useState } from '@wordpress/element';
 import { useInstanceId } from '@wordpress/compose';
 import { BaseControl, TextControl } from '@wordpress/components';
 
@@ -70,6 +70,7 @@ export const SelectTree = function SelectTree( {
 
 	const [ isFocused, setIsFocused ] = useState( false );
 	const [ isOpen, setIsOpen ] = useState( false );
+	const [ cleanInput, setCleanInput ] = useState( false );
 	const isReadOnly = ! isOpen && ! isFocused;
 
 	const inputProps: React.InputHTMLAttributes< HTMLInputElement > = {
@@ -78,11 +79,19 @@ export const SelectTree = function SelectTree( {
 		'aria-autocomplete': 'list',
 		'aria-controls': `${ props.id }-menu`,
 		autoComplete: 'off',
-		onFocus: () => {
+		onFocus: ( event ) => {
 			if ( ! isOpen ) {
 				setIsOpen( true );
 			}
 			setIsFocused( true );
+			if (
+				Array.isArray( props.selected ) &&
+				props.selected?.some(
+					( item: Item ) => item.label === event.target.value
+				)
+			) {
+				setCleanInput( true );
+			}
 		},
 		onBlur: ( event ) => {
 			if ( isOpen && isEventOutside( event ) ) {
@@ -143,6 +152,7 @@ export const SelectTree = function SelectTree( {
 							} }
 							inputProps={ inputProps }
 							suffix={ suffix }
+							cleanInput={ cleanInput && isOpen }
 						>
 							<SelectedItems
 								isReadOnly={ isReadOnly }
