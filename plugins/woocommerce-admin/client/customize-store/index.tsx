@@ -25,6 +25,8 @@ import {
 } from './types';
 import { ThemeCard } from './intro/theme-cards';
 
+import './style.scss';
+
 export type customizeStoreStateMachineEvents =
 	| introEvents
 	| designWithAiEvents
@@ -86,10 +88,10 @@ export const customizeStoreStateMachineDefinition = createMachine( {
 					target: 'backToHomescreen',
 				},
 				SELECTED_NEW_THEME: {
-					target: '? Appearance Task ?',
+					target: 'appearanceTask',
 				},
 				SELECTED_BROWSE_ALL_THEMES: {
-					target: '? Appearance Task ?',
+					target: 'appearanceTask',
 				},
 			},
 		},
@@ -121,7 +123,7 @@ export const customizeStoreStateMachineDefinition = createMachine( {
 			},
 		},
 		backToHomescreen: {},
-		'? Appearance Task ?': {},
+		appearanceTask: {},
 	},
 } );
 
