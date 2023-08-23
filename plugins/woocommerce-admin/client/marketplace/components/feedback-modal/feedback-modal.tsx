@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Modal, Button, TextareaControl } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
-import { useState, useEffect } from '@wordpress/element';
+import { useContext, useEffect, useState } from '@wordpress/element';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
@@ -12,6 +12,7 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 import './feedback-modal.scss';
 import LikertScale from '../likert-scale/likert-scale';
+import { ProductListContext } from '../../contexts/product-list-context';
 
 export default function FeedbackModal(): JSX.Element {
 	const CUSTOMER_EFFORT_SCORE_ACTION = 'marketplace_redesign_2023';
@@ -21,6 +22,8 @@ export default function FeedbackModal(): JSX.Element {
 		'marketplace_redesign_2023_last_shown_date'; // ensure we don't ask for feedback more than once per day
 	const SUPPRESS_IF_DISMISSED_X_TIMES = 1; // if the user dismisses the snackbar this many times, stop asking for feedback
 	const SUPPRESS_IF_AFTER_DATE = '2024-01-01'; // if this date is reached, stop asking for feedback
+	const productListContextValue = useContext( ProductListContext );
+	const { isLoading } = productListContextValue;
 
 	// Save that we dismissed the dialog or snackbar TODAY so we don't show it again until tomorrow (if ever)
 	const dismissToday = () =>
@@ -59,6 +62,7 @@ export default function FeedbackModal(): JSX.Element {
 		dismissedTimes() >= SUPPRESS_IF_DISMISSED_X_TIMES;
 
 	const [ isOpen, setOpen ] = useState( false );
+	const [ hasRenderedSnackbar, setHasRenderedSnackbar ] = useState( false );
 	const [ thoughts, setThoughts ] = useState( '' );
 	const [ easyToFind, setEasyToFind ] = useState( 0 );
 	const [ easyToFindValidiationFailed, setEasyToFindValidiationFailed ] =
@@ -73,7 +77,15 @@ export default function FeedbackModal(): JSX.Element {
 	};
 	const { createNotice } = useDispatch( 'core/notices' );
 
-	function maybeShowSnackbar() {
+	function maybeSetTimeout() {
+		if ( isLoading ) {
+			return;
+		}
+
+		if ( hasRenderedSnackbar ) {
+			return;
+		}
+
 		// don't show if the user has already given feedback or otherwise suppressed:
 		if ( isDismissedForever() ) {
 			return;
@@ -88,6 +100,12 @@ export default function FeedbackModal(): JSX.Element {
 			return;
 		}
 
+		const timer = setTimeout( showSnackbar, 5000 );
+
+		return () => clearTimeout( timer );
+	}
+
+	function showSnackbar() {
 		createNotice(
 			'success',
 			__( 'How easy is it to find an extension?', 'woocommerce' ),
@@ -140,10 +158,10 @@ export default function FeedbackModal(): JSX.Element {
 				],
 			}
 		);
+		setHasRenderedSnackbar( true );
 	}
 
-	// eslint-disable-next-line react-hooks/exhaustive-deps -- [] => we only want this effect to run once, on first render
-	useEffect( maybeShowSnackbar, [] );
+	useEffect( maybeSetTimeout, [ isLoading ] );
 
 	// We don't want the "How easy was it to find an extension?" dialog to appear forever:
 	const FEEDBACK_DIALOG_CAN_APPEAR =

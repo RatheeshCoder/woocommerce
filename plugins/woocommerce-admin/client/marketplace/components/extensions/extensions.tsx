@@ -16,7 +16,6 @@ import NoResults from '../product-list-content/no-results';
 
 export default function Extensions(): JSX.Element {
 	const productListContextValue = useContext( ProductListContext );
-
 	const { productList, isLoading } = productListContextValue;
 	const products = productList.slice( 0, 60 );
 

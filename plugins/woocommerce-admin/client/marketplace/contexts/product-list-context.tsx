@@ -16,11 +16,13 @@ import { MARKETPLACE_URL } from '../components/constants';
 type ProductListContextType = {
 	productList: Product[];
 	isLoading: boolean;
+	setIsLoading: ( isLoading: boolean ) => void;
 };
 
 export const ProductListContext = createContext< ProductListContextType >( {
 	productList: [],
 	isLoading: false,
+	setIsLoading: () => {},
 } );
 
 export function ProductListContextProvider( props: {
@@ -32,6 +34,7 @@ export function ProductListContextProvider( props: {
 	const contextValue = {
 		productList,
 		isLoading,
+		setIsLoading,
 	};
 
 	const query = useQuery();
